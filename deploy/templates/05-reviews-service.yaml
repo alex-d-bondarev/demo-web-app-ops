@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: reviews-service
-        image: "{{ .Values.global.imageRegistry }}/reviews-service:{{ .Values.reviewsService.imageTag }}"
+        image: "{{ .Values.global.imageRegistry }}/reviews-service:{{ .Chart.AppVersion }}"
         env:
         - name: DB_HOST
           value: "mysql"

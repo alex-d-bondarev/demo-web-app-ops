@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: "{{ .Values.global.imageRegistry }}/frontend:{{ .Values.frontend.imageTag }}"
+        image: "{{ .Values.global.imageRegistry }}/frontend:{{ .Chart.AppVersion }}"
         env:
         - name: ITEMS_SERVICE_URL
           value: "http://items-service:{{ .Values.itemsService.port }}"

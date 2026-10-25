@@ -14,13 +14,10 @@ wiremock:
   image: wiremock/wiremock:latest
 
 itemsService:
-  imageTag: latest
   port: 9020
 
 reviewsService:
-  imageTag: latest
   port: 9030
 
 frontend:
-  imageTag: latest
   port: 9010
