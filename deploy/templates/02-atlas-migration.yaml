@@ -33,7 +33,7 @@ spec:
           value: "{{ .Values.mysql.rootPassword }}"
         - name: DB_URL
           value: "mysql://root:{{ .Values.mysql.rootPassword }}@mysql:3306/{{ .Values.mysql.database }}"
-        command: ["schema", "apply", "--env", "local", "--auto-approve"]
+        command: ["atlas", "schema", "apply", "--env", "local", "--auto-approve"]
         volumeMounts:
         - name: workdir
           mountPath: /work
