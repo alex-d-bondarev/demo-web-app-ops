@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: atlas-migration
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+      - name: atlas
+        image: "{{ .Values.atlas.image }}"
+        env:
+        - name: DB_PASSWORD
+          value: "{{ .Values.mysql.rootPassword }}"
+        - name: DB_URL
+          value: "mysql://root:{{ .Values.mysql.rootPassword }}@mysql:3306/{{ .Values.mysql.database }}"
+        command: ["schema", "apply", "--env", "local", "--auto-approve"]
+      restartPolicy: OnFailure

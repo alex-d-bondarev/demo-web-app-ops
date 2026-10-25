@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.global.imageRegistry }}/frontend:{{ .Values.frontend.imageTag }}"
+        env:
+        - name: ITEMS_SERVICE_URL
+          value: "http://items-service:{{ .Values.itemsService.port }}"
+        - name: REVIEWS_SERVICE_URL
+          value: "http://reviews-service:{{ .Values.reviewsService.port }}"
+        - name: NODE_ENV
+          value: "production"
+        ports:
+        - containerPort: {{ .Values.frontend.port }}
+          name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  type: NodePort
+  ports:
+  - port: {{ .Values.frontend.port }}
+    targetPort: {{ .Values.frontend.port }}
+    name: http
+  selector:
+    app: frontend

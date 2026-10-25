@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: items-service
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: items-service
+  template:
+    metadata:
+      labels:
+        app: items-service
+    spec:
+      containers:
+      - name: items-service
+        image: "{{ .Values.global.imageRegistry }}/items-service:{{ .Values.itemsService.imageTag }}"
+        env:
+        - name: DB_HOST
+          value: "mysql"
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          value: "{{ .Values.mysql.database }}"
+        - name: DB_USER
+          value: "root"
+        - name: DB_PASSWORD
+          value: "{{ .Values.mysql.rootPassword }}"
+        - name: WIREMOCK_URL
+          value: "http://wiremock:8080"
+        - name: FLASK_PORT
+          value: "{{ .Values.itemsService.port }}"
+        ports:
+        - containerPort: {{ .Values.itemsService.port }}
+          name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: items-service
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  ports:
+  - port: {{ .Values.itemsService.port }}
+    targetPort: {{ .Values.itemsService.port }}
+    name: http
+  selector:
+    app: items-service
