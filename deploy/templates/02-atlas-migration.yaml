@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: atlas-migration-{{ .Chart.AppVersion | replace "." "-" }}
+  name: atlas-migration-cv{{ .Chart.version | replace "." "-" }}-appv{{ .Chart.AppVersion | replace "." "-" }}
   namespace: {{ .Values.global.namespace }}
   annotations:
     argocd.argoproj.io/sync-wave: "2"
