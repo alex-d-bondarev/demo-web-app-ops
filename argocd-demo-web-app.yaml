@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-web-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/your-username/my-app-ops.git'
+    targetRevision: HEAD
+    path: deploy
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: demo-web-app  # Change it if you changed namespace in ./deploy/values.yaml
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
