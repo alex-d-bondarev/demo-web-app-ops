@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: atlas-migration-cv{{ .Chart.Version | toString | replace "." "-" }}-appv{{ .Chart.AppVersion | toString | replace "." "-" }}
+  name: atlas-migration-{{ .Chart.AppVersion | toString | replace "." "-" }}
   namespace: {{ .Values.global.namespace }}
   annotations:
     argocd.argoproj.io/sync-wave: "2"
@@ -33,7 +33,7 @@ spec:
           value: "{{ .Values.mysql.rootPassword }}"
         - name: DB_URL
           value: "mysql://root:{{ .Values.mysql.rootPassword }}@mysql:3306/{{ .Values.mysql.database }}"
-        command: ["atlas", "schema", "apply", "--env", "local", "--auto-approve"]
+        args: ["schema", "apply", "--env", "local", "--auto-approve"]
         volumeMounts:
         - name: workdir
           mountPath: /work
