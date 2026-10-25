@@ -10,13 +10,34 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      - name: clone-db-files
+        image: alpine/git:latest
+        command:
+        - sh
+        - -c
+        - |
+          echo "Cloning database schema from GitHub..."
+          git clone --depth 1 https://github.com/alex-d-bondarev/demo-web-app.git /tmp/repo
+          cp -r /tmp/repo/database/* /work/
+          echo "Database files successfully copied to /work"
+        volumeMounts:
+        - name: workdir
+          mountPath: /work
       containers:
       - name: atlas
         image: "{{ .Values.atlas.image }}"
+        workingDir: /work
         env:
         - name: DB_PASSWORD
           value: "{{ .Values.mysql.rootPassword }}"
         - name: DB_URL
           value: "mysql://root:{{ .Values.mysql.rootPassword }}@mysql:3306/{{ .Values.mysql.database }}"
         command: ["schema", "apply", "--env", "local", "--auto-approve"]
+        volumeMounts:
+        - name: workdir
+          mountPath: /work
       restartPolicy: OnFailure
+      volumes:
+      - name: workdir
+        emptyDir: {}
