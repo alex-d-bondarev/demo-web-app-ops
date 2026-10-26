@@ -21,3 +21,6 @@ reviewsService:
 
 frontend:
   port: 9010
+
+wiremock:
+  port: 8080
