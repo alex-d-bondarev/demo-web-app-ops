@@ -23,6 +23,8 @@ spec:
           value: "http://items-service:{{ .Values.itemsService.port }}"
         - name: REVIEWS_SERVICE_URL
           value: "http://reviews-service:{{ .Values.reviewsService.port }}"
+        - name: WIREMOCK_SERVICE_URL
+          value: "http://wiremock:{{ .Values.wiremock.port }}"
         - name: NODE_ENV
           value: "production"
         ports:
