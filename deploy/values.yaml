@@ -1,26 +1,24 @@
+atlas:
+  image: arigaio/atlas:latest
+
+frontend:
+  port: 9010
+  
 global:
   imageRegistry: ghcr.io/alex-d-bondarev
   namespace: demo-web-app
+
+itemsService:
+  port: 9020
 
 mysql:
   image: mysql:8.0
   database: im_db
   rootPassword: root
 
-atlas:
-  image: arigaio/atlas:latest
-
-wiremock:
-  image: wiremock/wiremock:latest
-
-itemsService:
-  port: 9020
-
 reviewsService:
   port: 9030
 
-frontend:
-  port: 9010
-
 wiremock:
+  image: wiremock/wiremock:latest
   port: 8080
