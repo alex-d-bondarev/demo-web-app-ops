@@ -11,3 +11,7 @@ argocd login ${ARGO_CD_HOST}:${ARGO_CD_PORT}
 argocd repo add https://github.com/alex-d-bondarev/demo-web-app-ops.git
 kubectl apply -f argocd-demo-web-app.yaml
 ```
+
+## Hosts
+
+Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment to access frontend

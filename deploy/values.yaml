@@ -3,10 +3,24 @@ atlas:
 
 frontend:
   port: 9010
-  
+
 global:
   imageRegistry: ghcr.io/alex-d-bondarev
   namespace: demo-web-app
+
+ingress:
+  className: nginx
+  tls:
+    enabled: false
+    secretName: ""
+  hosts:
+    - host: demo-web-app.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: frontend
+            port: 9010
 
 itemsService:
   port: 9020
