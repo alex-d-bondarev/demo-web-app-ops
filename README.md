@@ -24,25 +24,15 @@ Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `.github/workflows/ci.yaml` | PR + push to main | Quick validation → k3d integration test with Helm tests |
+| `.github/workflows/ci.yaml` | PR + push to main | Quick validation: lint + template + kubeconform |
 
 ### What the CI does
 
-1. **Quick Validation** (runs first)
-   - Lint Helm chart (`helm lint`)
-   - Render Helm templates (`helm template`)
-   - Validate ArgoCD manifests with `kubeconform`
+1. **Lint Helm chart** (`helm lint`)
+2. **Render Helm templates** (`helm template`)
+3. **Validate ArgoCD manifests** with `kubeconform`
 
-2. **k3d Integration Test** (runs after quick-check passes)
-   - Spin up k3d cluster — Kubernetes (k3s) in Docker
-   - Install ArgoCD — applies official manifests
-   - Install Envoy Gateway CRDs — required before ArgoCD syncs
-   - Deploy App of Apps — applies `argocd/app-of-apps.yaml`
-   - Wait for readiness — envoy-gateway (wave 0) → demo-web-app (wave 1)
-   - Verify resources — Gateway + HTTPRoute exist
-   - Run Helm tests — validates deployed app (`helm test`)
-
-### Running locally (lint & template only)
+### Running locally
 
 **Option A: Helm CLI (recommended for development)**
 ```bash
@@ -79,9 +69,3 @@ make kubeconform   # validate ArgoCD manifests
 # Run all in CI order
 make check-all     # lint -> template -> kubeconform
 ```
-
-### GitHub Actions CI requirements (for full k3d integration test)
-
-- Docker running on the runner
-- ~2 GB free RAM for the k3d cluster
-- Runs automatically on push/PR to main via `.github/workflows/ci.yaml`
