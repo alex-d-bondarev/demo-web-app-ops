@@ -52,11 +52,6 @@ jobs:
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.10.0/manifests/install.yaml
           kubectl wait --for=condition=Available --timeout=120s deployment/argocd-server -n argocd
 
-      - name: Install Envoy Gateway CRDs
-        run: |
-          # Use v1.10.0 which has smaller annotations compatible with k3s
-          kubectl apply -f https://github.com/envoyproxy/gateway/releases/download/v1.10.0/envoy-gateway-crds.yaml
-
       - name: Deploy App of Apps
         run: |
           kubectl apply -f argocd/app-of-apps.yaml
