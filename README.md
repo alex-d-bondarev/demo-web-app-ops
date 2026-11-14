@@ -15,3 +15,74 @@ kubectl apply -f argocd-demo-web-app.yaml
 ## Hosts
 
 Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment to access frontend
+
+---
+
+## CI
+
+### GitHub Actions Workflows
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `.github/workflows/pr-check.yaml` | Pull Request | Fast validation: `helm lint` + `helm template` + `kubeconform` + `helm unittest` |
+| `.github/workflows/ci.yaml` | PR + push to main | Full integration test: k3d cluster + ArgoCD + Envoy Gateway |
+
+### What the full CI does
+
+1. **Lint ArgoCD Applications** — validates YAML with `kubeconform`
+2. **Lint & template Helm chart** — `helm lint` + `helm template` dry-run
+3. **Spin up k3d cluster** — Kubernetes (k3s) in Docker
+4. **Install ArgoCD** — applies official manifests
+5. **Install Envoy Gateway CRDs** — required before ArgoCD syncs
+6. **Deploy App of Apps** — applies `argocd/app-of-apps.yaml`
+7. **Wait for readiness** — envoy-gateway (wave 0) → demo-web-app (wave 1)
+8. **Verify resources** — Gateway + HTTPRoute exist
+
+### Running locally (lint & template only)
+
+**Option A: Helm CLI (recommended for development)**
+```bash
+# Install: https://helm.sh/docs/intro/install/
+# Install kubeconform: https://github.com/yannh/kubeconform#installation
+# Install helm unittest: helm plugin install https://github.com/helm-unittest/helm-unittest
+
+# Lint Helm chart
+helm lint deploy/
+
+# Render Helm templates
+helm template demo-web-app deploy/ --namespace demo-web-app --values deploy/values.yaml
+
+# Validate ArgoCD manifests with kubeconform
+kubeconform -strict -summary -ignore-missing-schemas argocd/*.yaml
+
+# Run helm unittest
+helm unittest deploy/
+```
+
+**Option B: Docker (no local install needed)**
+```bash
+# Lint
+docker run --rm -v "$PWD/deploy:/chart" alpine/helm:3.14.0 lint /chart
+
+# Template
+docker run --rm -v "$PWD/deploy:/chart" alpine/helm:3.14.0 \
+  template demo-web-app /chart --namespace demo-web-app --values /chart/values.yaml
+```
+
+**Option C: Makefile (wraps Option B)**
+```bash
+# Individual checks
+make lint          # helm lint
+make template      # helm template
+make kubeconform   # validate ArgoCD manifests
+make unittest      # helm unittest
+
+# Run all in CI order
+make check-all     # lint -> template -> kubeconform -> unittest
+```
+
+### GitHub Actions CI requirements (for full k3d integration test)
+
+- Docker running on the runner
+- ~2 GB free RAM for the k3d cluster
+- Runs automatically on push/PR to main via `.github/workflows/ci.yaml`
