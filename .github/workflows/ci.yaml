@@ -40,6 +40,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for SHA
+
+      - name: Install yq
+        run: |
+          wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
 
       - name: Install k3d
         run: |
@@ -54,13 +61,19 @@ jobs:
           kubectl wait --for=condition=Available --timeout=120s deployment/argocd-repo-server -n argocd
           kubectl wait --for=condition=Ready --timeout=120s pod -l app.kubernetes.io/name=argocd-application-controller -n argocd
 
-      - name: Deploy App of Apps
+      - name: Deploy App of Apps (patched targetRevision)
         run: |
-          kubectl apply -f argocd/app-of-apps.yaml
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            TARGET_REV="${{ github.event.pull_request.head.sha }}"
+          else
+            TARGET_REV="HEAD"
+          fi
+          echo "Using targetRevision: $TARGET_REV"
+          yq eval ".spec.source.targetRevision = \"$TARGET_REV\"" argocd/app-of-apps.yaml | kubectl apply -f -
 
       - name: Wait for App of Apps Application
         run: |
-          attempts=20
+          attempts=60
           until [ $attempts -eq 0 ]; do
             if kubectl get application app-of-apps -n argocd >/dev/null 2>&1; then
               echo "App of Apps Application exists"
@@ -81,7 +94,7 @@ jobs:
 
       - name: Wait for App of Apps to be Synced and Healthy
         run: |
-          attempts=20
+          attempts=60
           until [ $attempts -eq 0 ]; do
             SYNC_STATUS=$(kubectl get application app-of-apps -n argocd -o jsonpath='{.status.sync.status}' 2>/dev/null || echo "Unknown")
             HEALTH_STATUS=$(kubectl get application app-of-apps -n argocd -o jsonpath='{.status.health.status}' 2>/dev/null || echo "Unknown")
@@ -100,7 +113,7 @@ jobs:
 
       - name: Wait for child Applications
         run: |
-          attempts=20
+          attempts=60
           until [ $attempts -eq 0 ]; do
             if kubectl get application envoy-gateway -n argocd >/dev/null 2>&1 && \
                kubectl get application argocd-demo-web-app -n argocd >/dev/null 2>&1; then
@@ -118,7 +131,7 @@ jobs:
 
       - name: Wait for envoy-gateway-system namespace
         run: |
-          attempts=20
+          attempts=60
           until [ $attempts -eq 0 ]; do
             if kubectl get namespace envoy-gateway-system >/dev/null 2>&1; then
               echo "Namespace envoy-gateway-system exists"
