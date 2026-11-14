@@ -54,7 +54,7 @@ jobs:
 
       - name: Install Envoy Gateway CRDs
         run: |
-          kubectl apply -f https://github.com/envoyproxy/gateway/releases/download/v1.10.0/crds.yaml
+          kubectl apply -f https://github.com/envoyproxy/gateway/releases/download/v1.9.1/envoy-gateway-crds.yaml
 
       - name: Deploy App of Apps
         run: |
