@@ -56,6 +56,10 @@ jobs:
         run: |
           kubectl apply -f argocd/app-of-apps.yaml
 
+      - name: Wait for envoy-gateway-system namespace
+        run: |
+          kubectl wait --for=condition=Ready --timeout=120s namespace/envoy-gateway-system
+
       - name: Wait for Envoy Gateway
         run: |
           kubectl wait --for=condition=Available --timeout=180s deployment/envoy-gateway -n envoy-gateway-system
