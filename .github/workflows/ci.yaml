@@ -51,6 +51,7 @@ jobs:
           kubectl create namespace argocd
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.10.0/manifests/install.yaml
           kubectl wait --for=condition=Available --timeout=120s deployment/argocd-server -n argocd
+          kubectl wait --for=condition=Available --timeout=120s deployment/argocd-repo-server -n argocd
           kubectl wait --for=condition=Ready --timeout=120s pod -l app.kubernetes.io/name=argocd-application-controller -n argocd
 
       - name: Deploy App of Apps
@@ -59,7 +60,7 @@ jobs:
 
       - name: Wait for App of Apps Application
         run: |
-          attempts=60
+          attempts=20
           until [ $attempts -eq 0 ]; do
             if kubectl get application app-of-apps -n argocd >/dev/null 2>&1; then
               echo "App of Apps Application exists"
@@ -80,7 +81,7 @@ jobs:
 
       - name: Wait for App of Apps to be Synced and Healthy
         run: |
-          attempts=60
+          attempts=20
           until [ $attempts -eq 0 ]; do
             SYNC_STATUS=$(kubectl get application app-of-apps -n argocd -o jsonpath='{.status.sync.status}' 2>/dev/null || echo "Unknown")
             HEALTH_STATUS=$(kubectl get application app-of-apps -n argocd -o jsonpath='{.status.health.status}' 2>/dev/null || echo "Unknown")
@@ -99,7 +100,7 @@ jobs:
 
       - name: Wait for child Applications
         run: |
-          attempts=60
+          attempts=20
           until [ $attempts -eq 0 ]; do
             if kubectl get application envoy-gateway -n argocd >/dev/null 2>&1 && \
                kubectl get application argocd-demo-web-app -n argocd >/dev/null 2>&1; then
@@ -117,7 +118,7 @@ jobs:
 
       - name: Wait for envoy-gateway-system namespace
         run: |
-          attempts=60
+          attempts=20
           until [ $attempts -eq 0 ]; do
             if kubectl get namespace envoy-gateway-system >/dev/null 2>&1; then
               echo "Namespace envoy-gateway-system exists"
@@ -148,4 +149,3 @@ jobs:
       - name: Run Helm tests
         run: |
           helm test argocd-demo-web-app -n demo-web-app --timeout 120s
-
