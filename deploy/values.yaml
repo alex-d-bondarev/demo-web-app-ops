@@ -4,15 +4,10 @@ atlas:
 frontend:
   port: 9010
 
-global:
-  imageRegistry: ghcr.io/alex-d-bondarev
-  namespace: demo-web-app
-
-ingress:
-  className: nginx
-  tls:
-    enabled: false
-    secretName: ""
+gateway:
+  className: envoy
+  name: demo-web-app-gateway
+  namespace: envoy-gateway-system
   hosts:
     - host: demo-web-app.local
       paths:
@@ -21,6 +16,10 @@ ingress:
           service:
             name: frontend
             port: 9010
+
+global:
+  imageRegistry: ghcr.io/alex-d-bondarev
+  namespace: demo-web-app
 
 itemsService:
   port: 9020
