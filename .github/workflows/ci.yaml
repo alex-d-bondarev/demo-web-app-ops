@@ -51,10 +51,35 @@ jobs:
           kubectl create namespace argocd
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.10.0/manifests/install.yaml
           kubectl wait --for=condition=Available --timeout=120s deployment/argocd-server -n argocd
+          # Wait for ArgoCD controller to be ready
+          kubectl wait --for=condition=Available --timeout=120s deployment/argocd-application-controller -n argocd
 
       - name: Deploy App of Apps
         run: |
           kubectl apply -f argocd/app-of-apps.yaml
+
+      - name: Wait for App of Apps Application
+        run: |
+          for i in {1..60}; do
+            if kubectl get application app-of-apps -n argocd >/dev/null 2>&1; then
+              echo "App of Apps Application exists"
+              break
+            fi
+            echo "Waiting for App of Apps Application... ($i/60)"
+            sleep 2
+          done
+
+      - name: Wait for child Applications
+        run: |
+          for i in {1..60}; do
+            if kubectl get application envoy-gateway -n argocd >/dev/null 2>&1 && \
+               kubectl get application argocd-demo-web-app -n argocd >/dev/null 2>&1; then
+              echo "Child Applications exist"
+              break
+            fi
+            echo "Waiting for child Applications... ($i/60)"
+            sleep 2
+          done
 
       - name: Wait for envoy-gateway-system namespace
         run: |
