@@ -24,7 +24,7 @@ Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `.github/workflows/ci.yaml` | PR + push to main | Quick validation → k3d integration test (sequential) |
+| `.github/workflows/ci.yaml` | PR + push to main | Quick validation → k3d integration test with Helm tests |
 
 ### What the CI does
 
@@ -32,7 +32,6 @@ Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment
    - Lint Helm chart (`helm lint`)
    - Render Helm templates (`helm template`)
    - Validate ArgoCD manifests with `kubeconform`
-   - Run Helm unittest (`helm unittest`)
 
 2. **k3d Integration Test** (runs after quick-check passes)
    - Spin up k3d cluster — Kubernetes (k3s) in Docker
@@ -41,6 +40,7 @@ Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment
    - Deploy App of Apps — applies `argocd/app-of-apps.yaml`
    - Wait for readiness — envoy-gateway (wave 0) → demo-web-app (wave 1)
    - Verify resources — Gateway + HTTPRoute exist
+   - Run Helm tests — validates deployed app (`helm test`)
 
 ### Running locally (lint & template only)
 
@@ -48,7 +48,6 @@ Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment
 ```bash
 # Install: https://helm.sh/docs/intro/install/
 # Install kubeconform: https://github.com/yannh/kubeconform#installation
-# Install helm unittest: helm plugin install https://github.com/helm-unittest/helm-unittest
 
 # Lint Helm chart
 helm lint deploy/
@@ -58,9 +57,6 @@ helm template demo-web-app deploy/ --namespace demo-web-app --values deploy/valu
 
 # Validate ArgoCD manifests with kubeconform
 kubeconform -strict -summary -ignore-missing-schemas argocd/*.yaml
-
-# Run helm unittest
-helm unittest deploy/
 ```
 
 **Option B: Docker (no local install needed)**
@@ -79,10 +75,9 @@ docker run --rm -v "$PWD/deploy:/chart" alpine/helm:3.14.0 \
 make lint          # helm lint
 make template      # helm template
 make kubeconform   # validate ArgoCD manifests
-make unittest      # helm unittest
 
 # Run all in CI order
-make check-all     # lint -> template -> kubeconform -> unittest
+make check-all     # lint -> template -> kubeconform
 ```
 
 ### GitHub Actions CI requirements (for full k3d integration test)

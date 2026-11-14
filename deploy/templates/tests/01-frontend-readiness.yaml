@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-frontend-readiness"
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  containers:
+    - name: test
+      image: curlimages/curl:8.6
+      command:
+        - sh
+        - -c
+        - |
+          echo "Testing frontend readiness..."
+          for i in $(seq 1 30); do
+            if curl -sf http://frontend:{{ .Values.frontend.port }} >/dev/null; then
+              echo "Frontend is ready"
+              exit 0
+            fi
+            echo "Attempt $i: frontend not ready, waiting..."
+            sleep 2
+          done
+          echo "Frontend readiness check failed"
+          exit 1
+  restartPolicy: Never

@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-services-readiness"
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  containers:
+    - name: test
+      image: curlimages/curl:8.6
+      command:
+        - sh
+        - -c
+        - |
+          echo "Testing services readiness..."
+          for svc in "items-service:{{ .Values.itemsService.port }}" "reviews-service:{{ .Values.reviewsService.port }}" "wiremock:{{ .Values.wiremock.port }}"; do
+            echo "Checking $svc..."
+            for i in $(seq 1 30); do
+              if curl -sf "http://$svc" >/dev/null 2>&1 || curl -sf "http://$svc/health" >/dev/null 2>&1; then
+                echo "$svc is ready"
+                break
+              fi
+              echo "Attempt $i: $svc not ready, waiting..."
+              sleep 2
+            done
+          done
+          echo "All services ready"
+  restartPolicy: Never

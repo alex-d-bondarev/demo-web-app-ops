@@ -1,7 +1,6 @@
-.PHONY: help lint template kubeconform unittest check-all
+.PHONY: help lint template kubeconform check-all
 
 HELM_IMAGE := alpine/helm:3.14.0
-UNITTEST_IMAGE := helmunittest/helm-unittest:latest
 CHART_DIR := deploy
 ARGOCD_DIR := argocd
 
@@ -13,8 +12,7 @@ help:
 	@echo "  lint          Lint Helm chart"
 	@echo "  template      Render Helm templates"
 	@echo "  kubeconform   Validate ArgoCD manifests with kubeconform"
-	@echo "  unittest      Run helm unittest"
-	@echo "  check-all     Run all checks in CI order (lint -> template -> kubeconform -> unittest)"
+	@echo "  check-all     Run all checks in CI order (lint -> template -> kubeconform)"
 
 lint:
 	docker run --rm -v "$(PWD)/$(CHART_DIR):/chart" $(HELM_IMAGE) lint /chart
@@ -27,7 +25,4 @@ kubeconform:
 	docker run --rm -v "$(PWD)/$(ARGOCD_DIR):/manifests" alpine:3.19 \
 		sh -c "apk add --no-cache curl >/dev/null && curl -sL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-arm64.tar.gz | tar xz && ./kubeconform -strict -summary -ignore-missing-schemas /manifests/*.yaml"
 
-unittest:
-	docker run --rm -v "$(PWD)/$(CHART_DIR):/chart" $(UNITTEST_IMAGE) /chart
-
-check-all: lint template kubeconform unittest
+check-all: lint template kubeconform

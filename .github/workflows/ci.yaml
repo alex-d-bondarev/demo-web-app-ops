@@ -32,13 +32,6 @@ jobs:
         run: |
           find argocd -name '*.yaml' -exec kubeconform -strict -summary -ignore-missing-schemas {} \;
 
-      - name: Install helm-unittest (v0.3.8 compatible with Helm 3.14)
-        run: |
-          helm plugin install https://github.com/helm-unittest/helm-unittest --version v0.3.8
-
-      - name: Helm unittest
-        run: helm unittest deploy/
-
   k3d-deploy:
     name: k3d Integration Test
     runs-on: ubuntu-latest
@@ -81,3 +74,7 @@ jobs:
         run: |
           kubectl get gateway -n envoy-gateway-system
           kubectl get httproute -n demo-web-app
+
+      - name: Run Helm tests
+        run: |
+          helm test argocd-demo-web-app -n demo-web-app --timeout 120s
