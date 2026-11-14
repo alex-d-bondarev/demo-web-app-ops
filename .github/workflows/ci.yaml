@@ -32,12 +32,12 @@ jobs:
         run: |
           find argocd -name '*.yaml' -exec kubeconform -strict -summary -ignore-missing-schemas {} \;
 
+      - name: Install helm-unittest (v0.3.8 compatible with Helm 3.14)
+        run: |
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version v0.3.8
+
       - name: Helm unittest
-        uses: d3adb5/helm-unittest-action@v2
-        with:
-          helm-version: v3.14.0
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          charts: deploy
+        run: helm unittest deploy/
 
   k3d-deploy:
     name: k3d Integration Test
