@@ -4,7 +4,7 @@ metadata:
   name: frontend
   namespace: {{ .Values.global.namespace }}
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "33"
 spec:
   replicas: 1
   selector:
@@ -37,7 +37,7 @@ metadata:
   name: frontend
   namespace: {{ .Values.global.namespace }}
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "33"
 spec:
   type: NodePort
   ports:

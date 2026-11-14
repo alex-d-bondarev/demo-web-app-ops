@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.gateway.name }}
   namespace: {{ .Values.gateway.namespace }}
   annotations:
-    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-wave: "34"
 spec:
   gatewayClassName: {{ .Values.gateway.className }}
   listeners:
@@ -21,7 +21,7 @@ metadata:
   name: frontend
   namespace: {{ .Values.global.namespace }}
   annotations:
-    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-wave: "34"
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
