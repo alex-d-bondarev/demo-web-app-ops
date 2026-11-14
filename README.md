@@ -20,23 +20,27 @@ Use `http://demo-web-app.local` or `https://demo-web-app.local` after deployment
 
 ## CI
 
-### GitHub Actions Workflows
+### GitHub Actions Workflow
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `.github/workflows/pr-check.yaml` | Pull Request | Fast validation: `helm lint` + `helm template` + `kubeconform` + `helm unittest` |
-| `.github/workflows/ci.yaml` | PR + push to main | Full integration test: k3d cluster + ArgoCD + Envoy Gateway |
+| `.github/workflows/ci.yaml` | PR + push to main | Quick validation → k3d integration test (sequential) |
 
-### What the full CI does
+### What the CI does
 
-1. **Lint ArgoCD Applications** — validates YAML with `kubeconform`
-2. **Lint & template Helm chart** — `helm lint` + `helm template` dry-run
-3. **Spin up k3d cluster** — Kubernetes (k3s) in Docker
-4. **Install ArgoCD** — applies official manifests
-5. **Install Envoy Gateway CRDs** — required before ArgoCD syncs
-6. **Deploy App of Apps** — applies `argocd/app-of-apps.yaml`
-7. **Wait for readiness** — envoy-gateway (wave 0) → demo-web-app (wave 1)
-8. **Verify resources** — Gateway + HTTPRoute exist
+1. **Quick Validation** (runs first)
+   - Lint Helm chart (`helm lint`)
+   - Render Helm templates (`helm template`)
+   - Validate ArgoCD manifests with `kubeconform`
+   - Run Helm unittest (`helm unittest`)
+
+2. **k3d Integration Test** (runs after quick-check passes)
+   - Spin up k3d cluster — Kubernetes (k3s) in Docker
+   - Install ArgoCD — applies official manifests
+   - Install Envoy Gateway CRDs — required before ArgoCD syncs
+   - Deploy App of Apps — applies `argocd/app-of-apps.yaml`
+   - Wait for readiness — envoy-gateway (wave 0) → demo-web-app (wave 1)
+   - Verify resources — Gateway + HTTPRoute exist
 
 ### Running locally (lint & template only)
 
