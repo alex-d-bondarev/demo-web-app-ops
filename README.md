@@ -7,7 +7,9 @@ Manage alex-d-bondarev/demo-web-app deployments
 1. Clone this repository to machine with kubectl and argocd access
 2. Run the following:
 ```
-minikube start --cpus=4 --memory=6144 # or a similar alternative in case of a different k8s app
+minikube start --cpus=4 --memory=6144
+minikube tunnel
+# or a similar alternative in case of a different k8s app
 
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
