@@ -25,8 +25,12 @@ jobs:
       - name: Lint Helm Chart
         run: helm lint deploy/
 
-      - name: Helm Template (dry-run)
-        run: helm template demo-web-app deploy/ --namespace demo-web-app --values deploy/values.yaml
+      - name: Validate Rendered Helm Chart with kubeconform
+        run: |
+          helm template demo-web-app deploy/ --namespace demo-web-app --values deploy/values.yaml | \
+            kubeconform -strict -summary \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 
       - name: Validate ArgoCD manifests with kubeconform
         run: |
