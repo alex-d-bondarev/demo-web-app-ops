@@ -28,6 +28,9 @@ jobs:
       - name: Helm Template (dry-run)
         run: helm template demo-web-app deploy/ --namespace demo-web-app --values deploy/values.yaml
 
-      - name: Validate with kubeconform
+      - name: Validate ArgoCD manifests with kubeconform
         run: |
-          find argocd -name '*.yaml' -exec kubeconform -strict -summary -ignore-missing-schemas {} \;
+          kubeconform -strict -summary \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            argocd/
