@@ -47,8 +47,6 @@ spec:
       kind: Gateway
       name: {{ .Values.gateway.name }}
       namespace: {{ .Values.gateway.namespace }}
-  hostnames:
-    - "{{ (index .Values.gateway.hosts 0).host }}"
   rules:
     - matches:
         - path:
